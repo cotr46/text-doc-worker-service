@@ -307,7 +307,8 @@ class TextAnalysisProcessor:
                     "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
                     "usage": analysis_result.get("usage", {})
                 },
-                "raw_response": content  # Include raw response for debugging
+                "raw_response": content,  # Include raw response for debugging
+                    "parsed_result": parsed_result  # Include parsed result
             }
             
             return formatted_result
@@ -341,6 +342,10 @@ class TextAnalysisProcessor:
     def extract_json_from_content(self, content: str) -> Dict:
         """Extract JSON data from model response content"""
         try:
+            # Log content for debugging
+            self.log(f"ðŸ“„ Extracting JSON from content (length: {len(content)} chars)")
+            if len(content) > 0:
+                self.log(f"   Preview: {content[:200]}")
             # Try to parse the entire content as JSON
             return json.loads(content)
         except json.JSONDecodeError:
@@ -548,4 +553,5 @@ class TextAnalysisProcessor:
             "configured_analysis_types": list(self.text_model_config.keys()),
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
+
 
