@@ -1,4 +1,4 @@
-import os
+﻿import os
 import json
 import time
 import tempfile
@@ -31,7 +31,7 @@ import uvicorn
 class UltraFastDocumentWorker:
     """
     ULTRA-OPTIMIZED Worker untuk production
-    Target: 12.6 menit → 3-4 menit total processing time
+    Target: 12.6 menit â†’ 3-4 menit total processing time
     """
     
     def __init__(self):
@@ -65,7 +65,7 @@ class UltraFastDocumentWorker:
             # HARDCODED ULTRA-FAST SETTINGS - BYPASS ENV VAR ISSUES
             MIN_DELAY_SECONDS = 5      # HARDCODED: Was 30, now 5 (6x faster)
             SAFETY_MARGIN = 0          # HARDCODED: Was 2, now 0 (no safety margin)
-            TIMEOUT_SECONDS = 60       # HARDCODED: Was 120, now 60 (faster timeout)
+            TIMEOUT_SECONDS = 300      # HARDCODED: 5 minutes for PEP model (faster timeout)
             CHUNK_SIZE = 8             # HARDCODED: Was 2, now 8 (4x larger chunks)
             
             # HARDCODED HIGH-QUALITY settings for AI consistency
@@ -142,11 +142,11 @@ class UltraFastDocumentWorker:
         self.active_jobs = {}
         self.active_jobs_lock = threading.Lock()
 
-        print(f"🚀 Document Processing Worker initialized (HARDCODED ULTRA-FAST MODE):")
+        print(f"ðŸš€ Document Processing Worker initialized (HARDCODED ULTRA-FAST MODE):")
         print(f"   Project: {self.project_id}")
         print(f"   Subscription: {self.subscription_name}")
         print(f"   Results Topic: {self.results_topic}")
-        print(f"   🔄 TOPIC CONFIGURATION:")
+        print(f"   ðŸ”„ TOPIC CONFIGURATION:")
         print(f"      - Input subscription: {self.subscription_path}")
         print(f"      - Results topic: {self.results_topic_path}")
         print(f"      - Result publishing: DISABLED (prevents circular loop)")
@@ -161,7 +161,7 @@ class UltraFastDocumentWorker:
         print(f"      - Delay: {self.processor_config['min_delay_between_requests']}s (14x FASTER)")
         print(f"      - Chunk size: {self.processor_config['chunk_size']} pages (4x LARGER)")
         print(f"      - Timeout: {self.processor_config['timeout_seconds']}s (2x FASTER)")
-        print(f"   🔥 ALL SETTINGS HARDCODED - BYPASSING ENVIRONMENT VARIABLES")
+        print(f"   ðŸ”¥ ALL SETTINGS HARDCODED - BYPASSING ENVIRONMENT VARIABLES")
 
     def get_ultra_fast_processor(self, document_type: str, model_name: str = None) -> UltraFastPDFProcessor:
         """
@@ -178,11 +178,11 @@ class UltraFastDocumentWorker:
         # Reuse processor if configuration hasn't changed
         if (self.cached_processor is not None and 
             self.last_processor_config == config_key):
-            print("🔄 Reusing cached processor instance")
+            print("ðŸ”„ Reusing cached processor instance")
             return self.cached_processor
         
         # Create new processor
-        print("⚡ Creating new ULTRA-FAST processor")
+        print("âš¡ Creating new ULTRA-FAST processor")
         self.cached_processor = UltraFastPDFProcessor(config)
         self.cached_processor.enable_logging = True
         self.last_processor_config = config_key
@@ -194,7 +194,7 @@ class UltraFastDocumentWorker:
         Get cached text analysis processor instance
         """
         if self.text_analysis_processor is None:
-            print("⚡ Creating new TextAnalysisProcessor")
+            print("âš¡ Creating new TextAnalysisProcessor")
             self.text_analysis_processor = TextAnalysisProcessor(self.text_processor_config)
         
         return self.text_analysis_processor
@@ -206,7 +206,7 @@ class UltraFastDocumentWorker:
         try:
             download_start = time.time()
             
-            print(f"🔍 Downloading: {gcs_path} -> {local_path}")
+            print(f"ðŸ” Downloading: {gcs_path} -> {local_path}")
             
             if not gcs_path.startswith("gs://"):
                 raise ValueError(f"Invalid GCS path format: {gcs_path}")
@@ -219,8 +219,8 @@ class UltraFastDocumentWorker:
             bucket_name = path_parts[0]
             blob_name = path_parts[1]
             
-            print(f"   📦 Bucket: {bucket_name}")
-            print(f"   📄 Blob: {blob_name}")
+            print(f"   ðŸ“¦ Bucket: {bucket_name}")
+            print(f"   ðŸ“„ Blob: {blob_name}")
 
             # Get bucket and blob
             bucket = self.storage_client.bucket(bucket_name)
@@ -233,7 +233,7 @@ class UltraFastDocumentWorker:
             # Get blob info
             blob.reload()
             blob_size_mb = blob.size / (1024 * 1024) if blob.size else 0
-            print(f"   📊 Blob size: {blob_size_mb:.2f}MB")
+            print(f"   ðŸ“Š Blob size: {blob_size_mb:.2f}MB")
             
             # Download with timeout
             with open(local_path, 'wb') as f:
@@ -250,12 +250,12 @@ class UltraFastDocumentWorker:
             download_time = time.time() - download_start
             speed_mbps = local_size_mb / download_time if download_time > 0 else 0
             
-            print(f"✅ Download successful: {download_time:.2f}s, {local_size_mb:.1f}MB ({speed_mbps:.1f} MB/s)")
+            print(f"âœ… Download successful: {download_time:.2f}s, {local_size_mb:.1f}MB ({speed_mbps:.1f} MB/s)")
             return True
 
         except Exception as e:
             error_msg = f"Download failed for {gcs_path}: {str(e)}"
-            print(f"❌ {error_msg}")
+            print(f"âŒ {error_msg}")
             
             # Clean up partial download
             try:
@@ -273,11 +273,11 @@ class UltraFastDocumentWorker:
         """
         local_paths = []
         
-        print(f"🔄 Starting download of {len(gcs_paths)} files for job {job_id}")
+        print(f"ðŸ”„ Starting download of {len(gcs_paths)} files for job {job_id}")
         
         for i, gcs_path in enumerate(gcs_paths):
             try:
-                print(f"📥 Downloading file {i+1}/{len(gcs_paths)}: {gcs_path}")
+                print(f"ðŸ“¥ Downloading file {i+1}/{len(gcs_paths)}: {gcs_path}")
                 
                 # Extract file extension from GCS path
                 # Handle both gs://bucket/path/file.ext and just the filename
@@ -295,7 +295,7 @@ class UltraFastDocumentWorker:
                 ) as tmp_file:
                     local_path = tmp_file.name
                 
-                print(f"   📂 Local path: {local_path}")
+                print(f"   ðŸ“‚ Local path: {local_path}")
                 
                 # Download the file
                 download_success = self.ultra_fast_download_from_gcs(gcs_path, local_path)
@@ -305,9 +305,9 @@ class UltraFastDocumentWorker:
                     if os.path.exists(local_path) and os.path.getsize(local_path) > 0:
                         local_paths.append(local_path)
                         file_size_mb = os.path.getsize(local_path) / (1024 * 1024)
-                        print(f"✅ Downloaded page {i+1}: {filename} ({file_size_mb:.2f}MB)")
+                        print(f"âœ… Downloaded page {i+1}: {filename} ({file_size_mb:.2f}MB)")
                     else:
-                        print(f"❌ Downloaded file is empty or doesn't exist: {local_path}")
+                        print(f"âŒ Downloaded file is empty or doesn't exist: {local_path}")
                         # Clean up empty file
                         try:
                             if os.path.exists(local_path):
@@ -322,7 +322,7 @@ class UltraFastDocumentWorker:
                                 pass
                         return []
                 else:
-                    print(f"❌ Failed to download page {i+1}: {gcs_path}")
+                    print(f"âŒ Failed to download page {i+1}: {gcs_path}")
                     # Clean up failed download file
                     try:
                         if os.path.exists(local_path):
@@ -338,7 +338,7 @@ class UltraFastDocumentWorker:
                     return []
                     
             except Exception as e:
-                print(f"❌ Error downloading page {i+1}: {str(e)}")
+                print(f"âŒ Error downloading page {i+1}: {str(e)}")
                 print(f"   GCS Path: {gcs_path}")
                 # Clean up any partial downloads
                 for path in local_paths:
@@ -348,7 +348,7 @@ class UltraFastDocumentWorker:
                         pass
                 return []
         
-        print(f"✅ Successfully downloaded {len(local_paths)} files for multi-file processing")
+        print(f"âœ… Successfully downloaded {len(local_paths)} files for multi-file processing")
         return local_paths
 
     def ultra_fast_update_job_status(self, job_id: str, status: str, result: Dict = None, error: str = None):
@@ -370,30 +370,30 @@ class UltraFastDocumentWorker:
                 if result:
                     update_data["result"] = result
                 self.processed_jobs += 1
-                print(f"✅ Marking job {job_id} as completed with result")
+                print(f"âœ… Marking job {job_id} as completed with result")
             elif status == "failed":
                 update_data["completed_at"] = datetime.now(timezone.utc)
                 if error:
                     update_data["error"] = error
                 self.failed_jobs += 1
-                print(f"❌ Marking job {job_id} as failed with error: {error}")
+                print(f"âŒ Marking job {job_id} as failed with error: {error}")
             elif status == "processing":
-                print(f"⚡ Marking job {job_id} as processing")
+                print(f"âš¡ Marking job {job_id} as processing")
 
             # ULTRA-FAST: Short timeout with retry
             try:
                 doc_ref.update(update_data, timeout=5.0)
             except Exception as update_error:
-                print(f"⚠️ First update attempt failed for {job_id}: {update_error}")
+                print(f"âš ï¸ First update attempt failed for {job_id}: {update_error}")
                 # Retry once
                 time.sleep(0.5)
                 doc_ref.update(update_data, timeout=10.0)
             
             update_time = time.time() - start_time
-            print(f"⚡ Status updated in {update_time:.2f}s: {job_id} → {status}")
+            print(f"âš¡ Status updated in {update_time:.2f}s: {job_id} â†’ {status}")
 
         except Exception as e:
-            print(f"❌ Firestore update failed for {job_id}: {e}")
+            print(f"âŒ Firestore update failed for {job_id}: {e}")
             # Don't raise exception - continue processing
 
     def ultra_fast_publish_result(self, job_id: str, result: Dict, status: str):
@@ -417,10 +417,10 @@ class UltraFastDocumentWorker:
             message_id = future.result(timeout=5.0)
 
             publish_time = time.time() - start_time
-            print(f"⚡ Result published in {publish_time:.2f}s: {message_id}")
+            print(f"âš¡ Result published in {publish_time:.2f}s: {message_id}")
 
         except Exception as e:
-            print(f"❌ Publish failed: {e}")
+            print(f"âŒ Publish failed: {e}")
 
     def ultra_fast_process_document(self, job_data: Dict) -> Dict:
         """
@@ -433,8 +433,8 @@ class UltraFastDocumentWorker:
         job_type = job_data.get("job_type", "document")
         if job_type == "text_analysis":
             error_msg = f"CRITICAL ERROR: Text analysis job {job_id} incorrectly routed to document processor"
-            print(f"❌ {error_msg}")
-            print(f"🔍 Job data keys: {list(job_data.keys())}")
+            print(f"âŒ {error_msg}")
+            print(f"ðŸ” Job data keys: {list(job_data.keys())}")
             return {
                 "success": False,
                 "error": error_msg,
@@ -448,9 +448,9 @@ class UltraFastDocumentWorker:
         
         if missing_fields:
             error_msg = f"Missing required document processing fields: {missing_fields}"
-            print(f"❌ {error_msg}")
-            print(f"🔍 Available fields: {list(job_data.keys())}")
-            print(f"🔍 Job type: {job_type}")
+            print(f"âŒ {error_msg}")
+            print(f"ðŸ” Available fields: {list(job_data.keys())}")
+            print(f"ðŸ” Job type: {job_type}")
             return {
                 "success": False,
                 "error": error_msg,
@@ -466,9 +466,9 @@ class UltraFastDocumentWorker:
         is_multi_file = job_data.get("is_multi_file", False)
         file_count = job_data.get("file_count", 1)
 
-        print(f"🚀 ULTRA-FAST processing: {job_id} ({document_type} - {filename})")
+        print(f"ðŸš€ ULTRA-FAST processing: {job_id} ({document_type} - {filename})")
         if is_multi_file:
-            print(f"   📄 Multi-file document: {file_count} files")
+            print(f"   ðŸ“„ Multi-file document: {file_count} files")
         
         total_start = time.time()
         local_paths = []
@@ -479,8 +479,8 @@ class UltraFastDocumentWorker:
             
             if is_multi_file:
                 # Handle multiple files
-                print(f"🔍 Multi-file processing - GCS path type: {type(gcs_path)}")
-                print(f"🔍 GCS paths: {gcs_path}")
+                print(f"ðŸ” Multi-file processing - GCS path type: {type(gcs_path)}")
+                print(f"ðŸ” GCS paths: {gcs_path}")
                 
                 if not isinstance(gcs_path, list):
                     raise Exception(f"Multi-file job requires list of GCS paths, got {type(gcs_path)}: {gcs_path}")
@@ -489,7 +489,7 @@ class UltraFastDocumentWorker:
                     raise Exception("Multi-file job has empty GCS paths list")
                 
                 # Download all files
-                print(f"📥 Starting download of {len(gcs_path)} files...")
+                print(f"ðŸ“¥ Starting download of {len(gcs_path)} files...")
                 local_paths = self.download_multiple_files_from_gcs(gcs_path, job_id)
                 
                 if not local_paths:
@@ -498,7 +498,7 @@ class UltraFastDocumentWorker:
                 if len(local_paths) != len(gcs_path):
                     raise Exception(f"Partial download failure. Expected {len(gcs_path)} files, got {len(local_paths)}")
                 
-                print(f"✅ Successfully downloaded {len(local_paths)} files")
+                print(f"âœ… Successfully downloaded {len(local_paths)} files")
                 
                 # For multi-file processing, we'll process them as separate images
                 # The processor will handle them as a single document
@@ -532,7 +532,7 @@ class UltraFastDocumentWorker:
 
                 # STEP 4: ULTRA-FAST processing
                 processing_start = time.time()
-                print(f"⚡ Processing with ULTRA-FAST settings:")
+                print(f"âš¡ Processing with ULTRA-FAST settings:")
                 print(f"   - Model: {processor.model}")
                 print(f"   - Delays: {processor.min_delay_between_requests}s")
                 print(f"   - Chunks: {processor.chunk_size} pages")
@@ -552,17 +552,17 @@ class UltraFastDocumentWorker:
                 total_time = time.time() - total_start
                 overhead_time = total_time - processing_time
 
-                print(f"🎉 ULTRA-FAST processing completed:")
-                print(f"   ⏱️ Breakdown:")
+                print(f"ðŸŽ‰ ULTRA-FAST processing completed:")
+                print(f"   â±ï¸ Breakdown:")
                 print(f"      - Setup: {setup_time:.2f}s")
                 print(f"      - Download: {download_time:.2f}s") 
                 print(f"      - Processor init: {processor_init_time:.2f}s")
                 print(f"      - Processing: {processing_time:.2f}s")
-                print(f"   📊 Performance:")
+                print(f"   ðŸ“Š Performance:")
                 print(f"      - Total time: {total_time:.2f}s ({total_time/60:.1f} minutes)")
                 print(f"      - Overhead: {overhead_time:.2f}s ({overhead_time/total_time*100:.1f}%)")
                 if not is_multi_file:
-                    print(f"   🚀 Speedup: ~{(12.6*60)/total_time:.1f}x faster than baseline!")
+                    print(f"   ðŸš€ Speedup: ~{(12.6*60)/total_time:.1f}x faster than baseline!")
 
                 return {
                     "success": True,
@@ -598,7 +598,7 @@ class UltraFastDocumentWorker:
         except Exception as e:
             error_time = time.time() - total_start
             error_msg = f"ULTRA-FAST processing failed: {str(e)}"
-            print(f"❌ {error_msg} (after {error_time:.2f}s)")
+            print(f"âŒ {error_msg} (after {error_time:.2f}s)")
 
             # Cleanup on error
             for path in local_paths:
@@ -628,8 +628,8 @@ class UltraFastDocumentWorker:
         job_type = job_data.get("job_type", "document")
         if job_type != "text_analysis":
             error_msg = f"CRITICAL ERROR: Document processing job {job_id} incorrectly routed to text analysis processor"
-            print(f"❌ {error_msg}")
-            print(f"🔍 Job data keys: {list(job_data.keys())}")
+            print(f"âŒ {error_msg}")
+            print(f"ðŸ” Job data keys: {list(job_data.keys())}")
             return {
                 "success": False,
                 "error": error_msg,
@@ -643,9 +643,9 @@ class UltraFastDocumentWorker:
         
         if missing_fields:
             error_msg = f"Missing required text analysis fields: {missing_fields}"
-            print(f"❌ {error_msg}")
-            print(f"🔍 Available fields: {list(job_data.keys())}")
-            print(f"🔍 Job type: {job_type}")
+            print(f"âŒ {error_msg}")
+            print(f"ðŸ” Available fields: {list(job_data.keys())}")
+            print(f"ðŸ” Job type: {job_type}")
             return {
                 "success": False,
                 "error": error_msg,
@@ -659,7 +659,7 @@ class UltraFastDocumentWorker:
         name = job_data.get("name")
         model_name = job_data.get("model_name", "unknown")
         
-        print(f"🚀 ULTRA-FAST text analysis: {job_id} ({analysis_type} for {entity_type})")
+        print(f"ðŸš€ ULTRA-FAST text analysis: {job_id} ({analysis_type} for {entity_type})")
         print(f"   - Name: {name[:50]}..." if name and len(name) > 50 else f"   - Name: {name}")
         
         total_start = time.time()
@@ -679,10 +679,10 @@ class UltraFastDocumentWorker:
             total_time = time.time() - total_start
             
             if result.get("success"):
-                print(f"🎉 ULTRA-FAST text analysis completed:")
-                print(f"   ⏱️ Total time: {total_time:.2f}s")
-                print(f"   🤖 Model used: {result.get('model_used')}")
-                print(f"   📊 Analysis type: {result.get('analysis_type')}")
+                print(f"ðŸŽ‰ ULTRA-FAST text analysis completed:")
+                print(f"   â±ï¸ Total time: {total_time:.2f}s")
+                print(f"   ðŸ¤– Model used: {result.get('model_used')}")
+                print(f"   ðŸ“Š Analysis type: {result.get('analysis_type')}")
                 
                 # Record successful job in worker metrics
                 text_analysis_worker_metrics.record_job_success(
@@ -708,7 +708,7 @@ class UltraFastDocumentWorker:
                 }
             else:
                 error_msg = result.get("error", "Text analysis failed")
-                print(f"❌ Text analysis failed: {error_msg}")
+                print(f"âŒ Text analysis failed: {error_msg}")
                 
                 # Record failed job in worker metrics
                 text_analysis_worker_metrics.record_job_failure(
@@ -734,7 +734,7 @@ class UltraFastDocumentWorker:
         except Exception as e:
             error_time = time.time() - total_start
             error_msg = f"ULTRA-FAST text analysis failed: {str(e)}"
-            print(f"❌ {error_msg} (after {error_time:.2f}s)")
+            print(f"âŒ {error_msg} (after {error_time:.2f}s)")
             
             # Record failed job in worker metrics
             text_analysis_worker_metrics.record_job_failure(
@@ -767,7 +767,7 @@ class UltraFastDocumentWorker:
         try:
             # CONCURRENT validation
             if not isinstance(message_data, dict):
-                print(f"❌ Invalid message format")
+                print(f"âŒ Invalid message format")
                 self.subscriber.modify_ack_deadline(
                     subscription=self.subscription_path,
                     ack_ids=[ack_id],
@@ -785,10 +785,10 @@ class UltraFastDocumentWorker:
                     "thread_id": threading.current_thread().ident
                 }
             
-            print(f"⚡ CONCURRENT processing message: {job_id} (Thread: {threading.current_thread().name})")
+            print(f"âš¡ CONCURRENT processing message: {job_id} (Thread: {threading.current_thread().name})")
 
             # Debug message data with better formatting
-            print(f"🔍 Message analysis:")
+            print(f"ðŸ” Message analysis:")
             print(f"   - Job ID: {job_id}")
             print(f"   - Message keys: {sorted(list(message_data.keys()))}")
             print(f"   - Is multi-file: {message_data.get('is_multi_file', False)}")
@@ -812,7 +812,7 @@ class UltraFastDocumentWorker:
             )
             
             if is_result_message:
-                print(f"🚫 IGNORING result message for job {job_id}")
+                print(f"ðŸš« IGNORING result message for job {job_id}")
                 print(f"   - This is a result message with keys: {list(message_data.keys())}")
                 print(f"   - Result messages should go to results topic, not input topic")
                 print(f"   - Acknowledging and skipping processing")
@@ -837,8 +837,8 @@ class UltraFastDocumentWorker:
                 
                 if missing_fields:
                     error_msg = f"Missing text analysis fields: {missing_fields}"
-                    print(f"❌ Invalid text analysis message: {error_msg}")
-                    print(f"🔍 Available fields: {list(message_data.keys())}")
+                    print(f"âŒ Invalid text analysis message: {error_msg}")
+                    print(f"ðŸ” Available fields: {list(message_data.keys())}")
                     
                     if job_id != "unknown":
                         self.ultra_fast_update_job_status(job_id, "failed", error=error_msg)
@@ -853,7 +853,7 @@ class UltraFastDocumentWorker:
                 if missing_fields:
                     # Double-check: Is this actually a result message that got past our detection?
                     if "status" in message_data and "result" in message_data:
-                        print(f"🚫 CRITICAL: Result message detected in validation phase!")
+                        print(f"ðŸš« CRITICAL: Result message detected in validation phase!")
                         print(f"   - This should have been caught earlier")
                         print(f"   - Message keys: {list(message_data.keys())}")
                         print(f"   - Acknowledging and skipping to prevent circular loop")
@@ -868,9 +868,9 @@ class UltraFastDocumentWorker:
                     
                     # This is a genuine input message with missing fields
                     error_msg = f"Missing document processing fields: {missing_fields}"
-                    print(f"❌ Invalid document processing message: {error_msg}")
-                    print(f"🔍 Available fields: {list(message_data.keys())}")
-                    print(f"🔍 Message data: {json.dumps(message_data, indent=2, default=str)}")
+                    print(f"âŒ Invalid document processing message: {error_msg}")
+                    print(f"ðŸ” Available fields: {list(message_data.keys())}")
+                    print(f"ðŸ” Message data: {json.dumps(message_data, indent=2, default=str)}")
                     
                     if job_id != "unknown":
                         self.ultra_fast_update_job_status(job_id, "failed", error=error_msg)
@@ -886,15 +886,15 @@ class UltraFastDocumentWorker:
                 if job_doc.exists:
                     current_status = job_doc.to_dict().get("status", "unknown")
                     if current_status in ["completed", "failed"]:
-                        print(f"⚠️ Job {job_id} already {current_status}, skipping duplicate processing")
+                        print(f"âš ï¸ Job {job_id} already {current_status}, skipping duplicate processing")
                         self.subscriber.acknowledge(subscription=self.subscription_path, ack_ids=[ack_id])
                         return
                     elif current_status == "processing":
-                        print(f"⚠️ Job {job_id} already being processed by another worker, skipping")
+                        print(f"âš ï¸ Job {job_id} already being processed by another worker, skipping")
                         self.subscriber.acknowledge(subscription=self.subscription_path, ack_ids=[ack_id])
                         return
             except Exception as status_check_error:
-                print(f"⚠️ Status check failed for {job_id}: {status_check_error}")
+                print(f"âš ï¸ Status check failed for {job_id}: {status_check_error}")
                 # Continue processing - don't fail just because of status check
 
             # Mark as processing
@@ -908,25 +908,25 @@ class UltraFastDocumentWorker:
                 # Route to appropriate processor based on job type
                 job_type = message_data.get("job_type", "document")  # Default to document for backward compatibility
                 
-                print(f"🔍 Job routing for {job_id}:")
+                print(f"ðŸ” Job routing for {job_id}:")
                 print(f"   - Job type: {job_type}")
                 print(f"   - Available fields: {list(message_data.keys())}")
                 
                 if job_type == "text_analysis":
-                    print(f"🔍 Processing text analysis job: {job_id}")
+                    print(f"ðŸ” Processing text analysis job: {job_id}")
                     print(f"   - Analysis type: {message_data.get('analysis_type')}")
                     print(f"   - Entity type: {message_data.get('entity_type')}")
                     print(f"   - Name: {message_data.get('name', '')[:50]}...")
                     result = self.ultra_fast_process_text_analysis(message_data)
                 else:
-                    print(f"🔍 Processing document job: {job_id}")
+                    print(f"ðŸ” Processing document job: {job_id}")
                     print(f"   - Document type: {message_data.get('document_type')}")
                     print(f"   - Has GCS path: {'gcs_path' in message_data}")
                     print(f"   - Has filename: {'filename' in message_data}")
                     result = self.ultra_fast_process_document(message_data)
                 
                 message_time = time.time() - message_start_time
-                print(f"📊 CONCURRENT total message processing: {message_time:.2f}s (Thread: {threading.current_thread().name})")
+                print(f"ðŸ“Š CONCURRENT total message processing: {message_time:.2f}s (Thread: {threading.current_thread().name})")
 
                 if result and result.get("success"):
                     # SUCCESS path - double check we have valid result
@@ -935,14 +935,14 @@ class UltraFastDocumentWorker:
                         # DISABLED: Prevent circular loop
                         # self.ultra_fast_publish_result(job_id, result["result"], "completed")
                         
-                        print(f"✅ Job {job_id} completed successfully (result publishing disabled)")
+                        print(f"âœ… Job {job_id} completed successfully (result publishing disabled)")
                         
                         # ACK message
                         self.subscriber.acknowledge(subscription=self.subscription_path, ack_ids=[ack_id])
                     else:
                         # Success but no result - treat as error
                         error_msg = "Processing succeeded but no result returned"
-                        print(f"⚠️ Job {job_id}: {error_msg}")
+                        print(f"âš ï¸ Job {job_id}: {error_msg}")
                         self.ultra_fast_update_job_status(job_id, "failed", error=error_msg)
                         self.subscriber.acknowledge(subscription=self.subscription_path, ack_ids=[ack_id])
                 else:
@@ -952,29 +952,29 @@ class UltraFastDocumentWorker:
                     # DISABLED: Prevent circular loop
                     # self.ultra_fast_publish_result(job_id, {"error": error_msg}, "failed")
                     
-                    print(f"❌ Job {job_id} failed: {error_msg} (result publishing disabled)")
+                    print(f"âŒ Job {job_id} failed: {error_msg} (result publishing disabled)")
                     
                     # ACK failed job
                     self.subscriber.acknowledge(subscription=self.subscription_path, ack_ids=[ack_id])
 
             except Exception as processing_error:
                 error_msg = f"Processing exception: {str(processing_error)}"
-                print(f"❌ {error_msg}")
-                print(f"❌ Traceback: {traceback.format_exc()}")
+                print(f"âŒ {error_msg}")
+                print(f"âŒ Traceback: {traceback.format_exc()}")
                 
                 self.ultra_fast_update_job_status(job_id, "failed", error=error_msg)
                 self.subscriber.acknowledge(subscription=self.subscription_path, ack_ids=[ack_id])
 
         except Exception as e:
             error_msg = f"Message error: {str(e)}"
-            print(f"❌ {error_msg}")
-            print(f"❌ Message processing traceback: {traceback.format_exc()}")
+            print(f"âŒ {error_msg}")
+            print(f"âŒ Message processing traceback: {traceback.format_exc()}")
             
             if job_id and job_id != "unknown":
                 try:
                     self.ultra_fast_update_job_status(job_id, "failed", error=error_msg)
                 except Exception as update_error:
-                    print(f"❌ Failed to update job status: {update_error}")
+                    print(f"âŒ Failed to update job status: {update_error}")
             
             # NACK untuk retry
             try:
@@ -984,7 +984,7 @@ class UltraFastDocumentWorker:
                     ack_deadline_seconds=0,
                 )
             except Exception as nack_error:
-                print(f"❌ Failed to NACK message: {nack_error}")
+                print(f"âŒ Failed to NACK message: {nack_error}")
         finally:
             # Clean up active job tracking
             with self.active_jobs_lock:
@@ -995,7 +995,7 @@ class UltraFastDocumentWorker:
         """
         Start ULTRA-FAST polling worker
         """
-        print(f"🚀 Starting ULTRA-FAST polling worker...")
+        print(f"ðŸš€ Starting ULTRA-FAST polling worker...")
         print(f"Subscription: {self.subscription_path}")
 
         self.is_running = True
@@ -1021,13 +1021,13 @@ class UltraFastDocumentWorker:
                             response = None
                         else:
                             # This is an actual error
-                            print(f"❌ Pub/Sub pull error: {pull_error}")
+                            print(f"âŒ Pub/Sub pull error: {pull_error}")
                             time.sleep(5)
                             continue
 
                     if response and response.received_messages:
                         consecutive_empty = 0
-                        print(f"📨 Received {len(response.received_messages)} messages (CONCURRENT mode)")
+                        print(f"ðŸ“¨ Received {len(response.received_messages)} messages (CONCURRENT mode)")
 
                         # Process messages CONCURRENTLY using thread pool
                         futures = []
@@ -1051,7 +1051,7 @@ class UltraFastDocumentWorker:
                                     # Debug message content
                                     job_id = message_data.get('job_id', 'unknown')
                                     job_type = message_data.get('job_type', 'not_specified')
-                                    print(f"📨 Parsed message for job {job_id}")
+                                    print(f"ðŸ“¨ Parsed message for job {job_id}")
                                     print(f"   - Job type: {job_type}")
                                     print(f"   - Keys: {list(message_data.keys())}")
                                     
@@ -1066,7 +1066,7 @@ class UltraFastDocumentWorker:
                                         print(f"   - Has filename: {'filename' in message_data}")
                                     
                                 except (UnicodeDecodeError, json.JSONDecodeError) as parse_error:
-                                    print(f"❌ Message parsing failed: {parse_error}")
+                                    print(f"âŒ Message parsing failed: {parse_error}")
                                     print(f"   - Raw data length: {len(raw_data)}")
                                     print(f"   - Raw data preview: {raw_data[:200]}...")
                                     self.subscriber.modify_ack_deadline(
@@ -1084,54 +1084,54 @@ class UltraFastDocumentWorker:
                                 )
                                 futures.append(future)
                                 
-                                print(f"🚀 Submitted job {message_data.get('job_id', 'unknown')} to thread pool")
+                                print(f"ðŸš€ Submitted job {message_data.get('job_id', 'unknown')} to thread pool")
 
                             except Exception as e:
-                                print(f"❌ Error submitting message to thread pool: {e}")
+                                print(f"âŒ Error submitting message to thread pool: {e}")
                                 continue
                         
                         # Log concurrent processing status
                         if futures:
                             active_count = len([f for f in futures if not f.done()])
-                            print(f"📊 CONCURRENT STATUS: {len(futures)} jobs submitted, {active_count} active")
+                            print(f"ðŸ“Š CONCURRENT STATUS: {len(futures)} jobs submitted, {active_count} active")
                             
                             # Show active jobs
                             with self.active_jobs_lock:
                                 if self.active_jobs:
-                                    print(f"🔄 Active jobs: {list(self.active_jobs.keys())}")
+                                    print(f"ðŸ”„ Active jobs: {list(self.active_jobs.keys())}")
 
                         # Don't wait for completion - let them run concurrently
                     else:
                         consecutive_empty += 1
                         if consecutive_empty == 1:
-                            print(f"📭 No messages (ULTRA-FAST worker ready)")
+                            print(f"ðŸ“­ No messages (ULTRA-FAST worker ready)")
                         elif consecutive_empty >= max_empty_polls:
-                            print(f"💓 ULTRA-FAST heartbeat - active and optimized...")
+                            print(f"ðŸ’“ ULTRA-FAST heartbeat - active and optimized...")
                             consecutive_empty = 0
 
                         time.sleep(3)  # Short sleep
 
                 except KeyboardInterrupt:
-                    print("\n🛑 ULTRA-FAST worker shutdown requested")
+                    print("\nðŸ›‘ ULTRA-FAST worker shutdown requested")
                     break
                 except Exception as e:
                     error_str = str(e)
                     if "504" in error_str or "Deadline Exceeded" in error_str:
-                        print(f"⏰ Pub/Sub timeout (normal) - no messages available")
+                        print(f"â° Pub/Sub timeout (normal) - no messages available")
                         time.sleep(1)  # Short sleep for timeout
                     else:
-                        print(f"❌ ULTRA-FAST polling error: {e}")
+                        print(f"âŒ ULTRA-FAST polling error: {e}")
                         time.sleep(5)  # Longer sleep for real errors
 
         except Exception as e:
-            print(f"❌ ULTRA-FAST worker failed: {e}")
+            print(f"âŒ ULTRA-FAST worker failed: {e}")
             raise
         finally:
             self.is_running = False
             # Cleanup thread pool
             self.io_executor.shutdown(wait=True)
 
-        print("✅ ULTRA-FAST worker shutdown complete")
+        print("âœ… ULTRA-FAST worker shutdown complete")
 
     def get_health_status(self):
         """Get CONCURRENT worker health status with text analysis metrics"""
@@ -1174,10 +1174,10 @@ class UltraFastDocumentWorker:
             "concurrent_optimizations": {
                 "concurrent_jobs": f"{self.max_workers} jobs in parallel",
                 "concurrent_chunks": f"{self.max_concurrent_chunks} API calls per job",
-                "delay_reduction": "70s → 15s (5x faster)",
-                "chunk_size_optimized": "2 → 4 pages",
-                "image_quality_optimized": "88% → 80%",
-                "timeout_reduced": "150s → 90s",
+                "delay_reduction": "70s â†’ 15s (5x faster)",
+                "chunk_size_optimized": "2 â†’ 4 pages",
+                "image_quality_optimized": "88% â†’ 80%",
+                "timeout_reduced": "150s â†’ 90s",
                 "processor_caching": "enabled",
                 "thread_pool_processing": "enabled",
                 "parallel_api_calls": "enabled",
@@ -1400,7 +1400,7 @@ def main():
     global worker
 
     try:
-        print("🚀 Initializing CONCURRENT Document Processing & Text Analysis Worker...")
+        print("ðŸš€ Initializing CONCURRENT Document Processing & Text Analysis Worker...")
 
         # Initialize worker
         worker = UltraFastDocumentWorker()
@@ -1411,14 +1411,14 @@ def main():
         )
         worker_thread.start()
 
-        print(f"✅ CONCURRENT Worker thread started")
-        print(f"🌐 Starting HTTP server on port {worker.port}")
-        print(f"🎯 Target performance: 1-2 minutes with concurrency (was 12.6 minutes)")
-        print(f"🔄 Concurrent jobs: {worker.max_workers}")
-        print(f"⚡ Concurrent chunks per job: {worker.max_concurrent_chunks}")
-        print(f"📝 Text analysis support: Enabled")
-        print(f"🔍 Supported analysis types: PEP, negative news, law involvement")
-        print(f"👥 Supported entity types: Person, corporate")
+        print(f"âœ… CONCURRENT Worker thread started")
+        print(f"ðŸŒ Starting HTTP server on port {worker.port}")
+        print(f"ðŸŽ¯ Target performance: 1-2 minutes with concurrency (was 12.6 minutes)")
+        print(f"ðŸ”„ Concurrent jobs: {worker.max_workers}")
+        print(f"âš¡ Concurrent chunks per job: {worker.max_concurrent_chunks}")
+        print(f"ðŸ“ Text analysis support: Enabled")
+        print(f"ðŸ” Supported analysis types: PEP, negative news, law involvement")
+        print(f"ðŸ‘¥ Supported entity types: Person, corporate")
 
         # Start HTTP server
         uvicorn.run(
@@ -1429,14 +1429,15 @@ def main():
         )
 
     except KeyboardInterrupt:
-        print("\n🛑 CONCURRENT Worker stopped by user")
+        print("\nðŸ›‘ CONCURRENT Worker stopped by user")
         if worker:
             worker.is_running = False
     except Exception as e:
-        print(f"❌ CONCURRENT Worker failed to start: {e}")
+        print(f"âŒ CONCURRENT Worker failed to start: {e}")
         print(traceback.format_exc())
         exit(1)
 
 
 if __name__ == "__main__":
     main()
+
