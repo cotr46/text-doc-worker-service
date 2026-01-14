@@ -237,10 +237,12 @@ class TextAnalysisProcessor:
             )
             
             # Call the model using the client
+            # Use temperature=1 for PEP model (doesn't support 0.1)
+            temperature = 1.0 if "pep" in model_name.lower() or "politically" in model_name.lower() else 0.1
             response = self.model_client.call_model(
                 model_name=model_name,
                 prompt=prompt,
-                temperature=0.1,  # Low temperature for consistent results
+                temperature=temperature,  # Low temperature for consistent results
                 max_tokens=2000
             )
             
@@ -546,3 +548,4 @@ class TextAnalysisProcessor:
             "configured_analysis_types": list(self.text_model_config.keys()),
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
+
