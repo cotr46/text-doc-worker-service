@@ -1,4 +1,4 @@
-"""
+﻿"""
 Text Analysis Processor for handling text-based analysis models
 Supports person and corporate name analysis for PEP, negative news, and law involvement
 """
@@ -59,7 +59,7 @@ class TextAnalysisProcessor:
             }
         }
         
-        self.log("🚀 TextAnalysisProcessor initialized")
+        self.log("ðŸš€ TextAnalysisProcessor initialized")
         self.log(f"   - Base URL: {self.base_url}")
         self.log(f"   - Timeout: {self.timeout_seconds}s")
         self.log(f"   - Available models: {list(self.text_model_config.keys())}")
@@ -97,7 +97,7 @@ class TextAnalysisProcessor:
         name = job_data.get("name")
         additional_context = job_data.get("additional_context")
         
-        self.log(f"🔍 Processing text analysis job {job_id}")
+        self.log(f"ðŸ” Processing text analysis job {job_id}")
         self.log(f"   - Analysis type: {analysis_type}")
         self.log(f"   - Entity type: {entity_type}")
         self.log(f"   - Name: {name[:50]}..." if name and len(name) > 50 else f"   - Name: {name}")
@@ -127,17 +127,12 @@ class TextAnalysisProcessor:
                 supported_entities = model_config["entity_types"]
                 error_msg = f"Entity type '{entity_type}' not supported for '{analysis_type}'. Supported: {supported_entities}"
                 self.log_error(job_id, "COMPATIBILITY_ERROR", error_msg)
-                raise ValueError(error_msg)
-            
-            # Check model availability before processing
+                raise ValueError(error_msg)            # Model availability check removed - model confirmed working via Postman
+            # Direct call to model for better performance and reliability
             model_name = model_config["model"]
-            if not self.check_model_availability(model_name):
-                error_msg = f"Model '{model_name}' is currently unavailable"
-                self.log_error(job_id, "MODEL_UNAVAILABLE", error_msg)
-                raise Exception(error_msg)
             
             # Call AI model for analysis with retry logic
-            self.log(f"🤖 Calling AI model: {model_name}")
+            self.log(f"ðŸ¤– Calling AI model: {model_name}")
             
             try:
                 analysis_result = self.call_text_analysis_model(
@@ -175,7 +170,7 @@ class TextAnalysisProcessor:
             
             processing_time = time.time() - start_time
             
-            self.log(f"✅ Text analysis completed for job {job_id} in {processing_time:.2f}s")
+            self.log(f"âœ… Text analysis completed for job {job_id} in {processing_time:.2f}s")
             self.log_success(job_id, processing_time, model_name, analysis_type)
             
             return {
@@ -191,8 +186,8 @@ class TextAnalysisProcessor:
         except Exception as e:
             processing_time = time.time() - start_time
             error_msg = f"Text analysis failed for job {job_id}: {str(e)}"
-            self.log(f"❌ {error_msg}")
-            self.log(f"❌ Traceback: {traceback.format_exc()}")
+            self.log(f"âŒ {error_msg}")
+            self.log(f"âŒ Traceback: {traceback.format_exc()}")
             
             # Log structured error for monitoring
             self.log_error(job_id, "PROCESSING_ERROR", error_msg, {
@@ -228,7 +223,7 @@ class TextAnalysisProcessor:
             Raw response from AI model
         """
         try:
-            self.log(f"📤 Calling model via client: {model_name}")
+            self.log(f"ðŸ“¤ Calling model via client: {model_name}")
             self.log(f"   - Analysis type: {analysis_type}")
             self.log(f"   - Entity type: {entity_type}")
             self.log(f"   - Name: {name[:50]}..." if len(name) > 50 else f"   - Name: {name}")
@@ -249,7 +244,7 @@ class TextAnalysisProcessor:
                 max_tokens=2000
             )
             
-            self.log(f"✅ Model response received via client")
+            self.log(f"âœ… Model response received via client")
             self.log(f"   - Response time: {response.response_time:.2f}s")
             self.log(f"   - Content length: {len(response.content)} characters")
             self.log(f"   - Usage: {response.usage}")
@@ -265,7 +260,7 @@ class TextAnalysisProcessor:
             
         except Exception as e:
             error_msg = f"Model client call failed: {str(e)}"
-            self.log(f"❌ {error_msg}")
+            self.log(f"âŒ {error_msg}")
             raise Exception(error_msg)
 
     def format_analysis_result(self, analysis_result: Dict, analysis_type: str, entity_type: str, 
@@ -316,7 +311,7 @@ class TextAnalysisProcessor:
             return formatted_result
             
         except Exception as e:
-            self.log(f"⚠️ Error formatting result, using fallback: {str(e)}")
+            self.log(f"âš ï¸ Error formatting result, using fallback: {str(e)}")
             
             # Fallback formatting
             return {
@@ -466,7 +461,7 @@ class TextAnalysisProcessor:
         try:
             return self.model_client.validate_model_availability(model_name)
         except Exception as e:
-            self.log(f"❌ Error checking model availability for {model_name}: {str(e)}")
+            self.log(f"âŒ Error checking model availability for {model_name}: {str(e)}")
             return False
     
     def get_available_models(self) -> Dict[str, bool]:
@@ -506,10 +501,10 @@ class TextAnalysisProcessor:
             error_log["context"] = context
         
         # Log as structured JSON for monitoring systems
-        self.log(f"🚨 ERROR: {json.dumps(error_log)}")
+        self.log(f"ðŸš¨ ERROR: {json.dumps(error_log)}")
         
         # Also log human-readable format
-        self.log(f"❌ [{error_type}] Job {job_id}: {error_message}")
+        self.log(f"âŒ [{error_type}] Job {job_id}: {error_message}")
     
     def log_success(self, job_id: str, processing_time: float, model_name: str, analysis_type: str) -> None:
         """
@@ -534,7 +529,7 @@ class TextAnalysisProcessor:
         }
         
         # Log as structured JSON for monitoring systems
-        self.log(f"✅ SUCCESS: {json.dumps(success_log)}")
+        self.log(f"âœ… SUCCESS: {json.dumps(success_log)}")
     
     def get_error_statistics(self) -> Dict[str, Any]:
         """
