@@ -182,7 +182,7 @@ class TextModelClient:
                 self.log(f"📤 Calling model: {model_name}")
                 self.log(f"   - Endpoint: {self.chat_endpoint}")
                 self.log(f"   - Prompt length: {len(prompt)} characters")
-                self.log(f"   - Temperature: {payload['temperature']}")
+                self.log(f"   - Temperature: {payload.get('temperature', 'default')}")
                 self.log(f"   - Max tokens: {payload['max_tokens']}")
             else:
                 self.log(f"📤 Retry attempt {attempt + 1} for model: {model_name}")
