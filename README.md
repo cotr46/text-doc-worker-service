@@ -1,171 +1,185 @@
-# Document Processing & Text Analysis Worker Service
+﻿# Text Document Processing Worker Service
 
-Async worker service that processes document processing and text analysis jobs. This service consumes messages from Pub/Sub and performs the actual processing work.
+Background worker service for processing documents and text analysis jobs.
 
-## 🚀 Features
+## Service Information
 
-### Document Processing
-- PDF to image conversion with quality optimization
-- Multi-page document handling
-- Image quality enhancement and resizing
-- Google Cloud Storage integration
+**Service Name**: text-doc-worker-service-v2  
+**Region**: asia-southeast2  
+**URL**: https://text-doc-worker-service-v2-lh5pr6ewdq-et.a.run.app  
+**Platform**: Google Cloud Run
 
-### Text Analysis Processing
-- **Person Analysis**: PEP screening, negative news, law involvement
-- **Corporate Analysis**: Corporate negative news and law involvement
-- **Model Integration**: Direct API calls to text analysis models
-- **Result Formatting**: Structured JSON response formatting
+## Deployment
 
-## 🏗️ Architecture
+### Automatic Deployment
 
-```
-┌─────────────────┐    ┌─────────────────┐
-│ Worker Service  │    │ Text Models     │
-│                 │    │                 │
-│ • Job Processing│◄──►│ • PEP Analysis  │
-│ • Text Analysis │    │ • Negative News │
-│ • Doc Processing│    │ • Law Involvement│
-│ • Result Storage│    │ • Corporate Models│
-└─────────────────┘    └─────────────────┘
-         ▲
-         │
-┌─────────────────┐
-│ Google Cloud    │
-│                 │
-│ • Pub/Sub       │
-│ • Firestore     │
-│ • Cloud Storage │
-└─────────────────┘
-```
-
-## 🛠️ Technology Stack
-
-- **Runtime**: Python 3.13
-- **Framework**: FastAPI (for health endpoints)
-- **Cloud Platform**: Google Cloud Run
-- **Message Queue**: Google Pub/Sub
-- **Database**: Google Firestore
-- **Storage**: Google Cloud Storage
-- **Image Processing**: Pillow, pdf2image
-
-## 📦 Core Components
-
-### Main Worker (`worker.py`)
-- Message processing from Pub/Sub
-- Job routing (document vs text analysis)
-- Health check endpoints
-- Metrics collection
-
-### Text Analysis Processor (`text_analysis_processor.py`)
-- Text analysis job processing
-- Model API integration
-- Result formatting and validation
-- Error handling and retries
-
-### Text Model Client (`text_model_client.py`)
-- HTTP client for text analysis models
-- Authentication handling
-- Request/response formatting
-- Timeout and retry logic
-
-### PDF Processor (`pdf_processor.py`)
-- Document processing logic
-- PDF to image conversion
-- Image quality optimization
-- Multi-page handling
-
-## 🚀 Deployment
-
-### Prerequisites
-- Google Cloud Project: `bni-prod-dma-bnimove-ai`
-- Service Account: `document-processing-sa@bni-prod-dma-bnimove-ai.iam.gserviceaccount.com`
-- Container Registry access
-- Text analysis model endpoint: `https://nexus-bnimove-369455734154.asia-southeast2.run.app`
-- Pub/Sub subscription: `document-processing-worker`
-
-### Auto Deployment
-Push to `main` branch triggers automatic deployment via Cloud Build:
+Service automatically deploys when code is pushed to `main` branch:
 
 ```bash
-# Setup GitHub trigger
-gcloud builds triggers create github \
-  --repo-name=your-worker-repo-name \
-  --repo-owner=your-github-username \
-  --branch-pattern="^main$" \
-  --build-config=cloudbuild.yaml
+git add .
+git commit -m "Your changes"
+git push origin main
+```
+
+Deployment takes 5-10 minutes. Monitor progress:
+```bash
+gcloud builds list --project=bni-prod-dma-bnimove-ai --limit=5
 ```
 
 ### Manual Deployment
+
 ```bash
-# Build and deploy
-gcloud run services replace worker_service.yaml --region=asia-southeast1
+gcloud run deploy text-doc-worker-service-v2 \
+  --source . \
+  --region=asia-southeast2 \
+  --project=bni-prod-dma-bnimove-ai
 ```
 
-## ⚙️ Configuration
+## Architecture
+
+### Processing Flow
+
+```
+Pub/Sub â†’ Worker Service â†’ AI Model â†’ Firestore
+```
+
+1. Worker subscribes to Pub/Sub topic
+2. Receives job messages from API Service
+3. Downloads files from Cloud Storage
+4. Processes with appropriate AI model
+5. Saves results to Firestore
+6. Publishes completion message
+
+### Supported Processing Types
+
+**Document Processing**:
+- KTP analysis
+- NPWP analysis
+- SKU analysis
+- NIB analysis
+- BPKB analysis
+- SHM/SHGB analysis
+
+**Text Analysis**:
+- PEP (Politically Exposed Person) screening
+- Negative news analysis
+- Law involvement screening
+
+## Configuration
 
 ### Environment Variables
-- `GOOGLE_CLOUD_PROJECT`: bni-prod-dma-bnimove-ai
-- `TEXT_MODEL_BASE_URL`: https://nexus-bnimove-369455734154.asia-southeast2.run.app
-- `TEXT_MODEL_API_KEY`: sk-c2ebcb8d36aa4361a28560915d8ab6f2
-- `GCS_BUCKET_NAME`: sbp-wrapper-bucket
-- `PUBSUB_SUBSCRIPTION`: document-processing-worker
-- `FIRESTORE_DATABASE`: document-processing-firestore
 
-### Scaling
-- **Min Instances**: 1
-- **Max Instances**: 10
-- **CPU**: 2 vCPU
-- **Memory**: 4 GiB
-- **Timeout**: 900 seconds
+- `GOOGLE_CLOUD_PROJECT` - GCP project ID (default: bni-prod-dma-bnimove-ai)
+- `PUBSUB_SUBSCRIPTION` - Pub/Sub subscription name (default: document-processing-worker)
+- `PUBSUB_RESULTS_TOPIC` - Results topic (default: document-processing-results)
+- `FIRESTORE_DATABASE` - Firestore database (default: document-processing-firestore)
+- `OPENWEBUI_API_KEY` - AI model API key
+- `OPENWEBUI_BASE_URL` - AI model base URL (default: https://nexus-bnimove-369455734154.asia-southeast2.run.app)
+- `MAX_FILE_SIZE_MB` - Maximum file size (default: 100)
 
-### Processing Configuration
-- **Max Workers**: 3
-- **Max Concurrent Chunks**: 2
-- **Chunk Size**: 2
-- **Base Image Quality**: 95%
-- **PDF DPI**: 200
+### Resources
 
-## 🔄 Message Processing
+- Memory: 4Gi
+- CPU: 2
+- Min instances: 1
+- Max instances: 10
+- Timeout: 300 seconds (5 minutes)
 
-### Job Types
-1. **Document Processing**: `job_type: "document"`
-2. **Text Analysis**: `job_type: "text_analysis"`
+## Processing Details
 
-### Message Format
-```json
-{
-  "job_id": "unique-job-id",
-  "job_type": "text_analysis",
-  "analysis_type": "pep-analysis",
-  "entity_type": "person",
-  "name": "John Doe",
-  "model_name": "politically-exposed-person-v2"
-}
-```
+### Document Processing
 
-## 📊 Monitoring
+**PDF Processing**:
+- Extracts text and images from PDF
+- Analyzes with AI model
+- Supports multi-page documents
+- Handles scanned documents (OCR)
 
-- Health check endpoint: `/health`
-- Metrics collection via `text_analysis_worker_metrics.py`
-- Job processing statistics
-- Performance monitoring
-- Error tracking
+**Image Processing**:
+- Supports JPG, JPEG, PNG formats
+- Image quality optimization
+- Text extraction via OCR
 
-## 🏃‍♂️ Local Development
+### Text Analysis
+
+**PEP Analysis**:
+- Model: politically-exposed-person-v2
+- Temperature: 1.0 (required by model)
+- Timeout: 300 seconds
+- Entity types: person only
+
+**Negative News**:
+- Model: negative-news
+- Entity types: person, corporate
+
+**Law Involvement**:
+- Model: law-involvement
+- Entity types: person, corporate
+
+## Development
+
+### Local Setup
 
 ```bash
 # Install dependencies
 pip install -r requirements.txt
 
-# Set environment variables
-export GOOGLE_CLOUD_PROJECT=bni-prod-dma-bnimove-ai
-export TEXT_MODEL_BASE_URL=https://nexus-bnimove-369455734154.asia-southeast2.run.app
-
-# Run locally
+# Run worker
 python worker.py
 ```
 
-## 📄 License
+### Testing
 
-Internal BNI project - All rights reserved.
-# Auto-deploy test - 2026-01-14 15:37:08
+Worker service runs continuously and processes messages from Pub/Sub. To test:
+
+1. Submit job via API Service
+2. Monitor worker logs
+3. Check Firestore for results
+
+## Monitoring
+
+### View Logs
+
+```bash
+gcloud logging read \
+  "resource.type=cloud_run_revision AND resource.labels.service_name=text-doc-worker-service-v2" \
+  --limit=50 \
+  --project=bni-prod-dma-bnimove-ai
+```
+
+### View Metrics
+
+Console: https://console.cloud.google.com/run/detail/asia-southeast2/text-doc-worker-service-v2
+
+### Key Metrics
+
+- Messages processed per minute
+- Processing time per job
+- Success/failure rate
+- Model response time
+- Memory/CPU utilization
+
+## Troubleshooting
+
+### Common Issues
+
+**Timeout Errors**:
+- Increase timeout setting (currently 300s)
+- Check AI model response time
+- Verify network connectivity
+
+**Model Errors**:
+- Verify API key is valid
+- Check model availability
+- Review temperature settings
+
+**Memory Issues**:
+- Monitor memory usage
+- Optimize PDF processing
+- Reduce concurrent processing
+
+## Support
+
+**Project**: bni-prod-dma-bnimove-ai  
+**Region**: asia-southeast2  
+**Repository**: https://github.com/cotr46/text-doc-worker-service
